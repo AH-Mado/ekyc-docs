@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EKYC — Flutter Integration</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #8b5cf6;
+        --secondary: #a855f7;
+        --indigo: #6366f1;
+        --gradient: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+
+        --bg: #05050a;
+        --surface: #0d0d1a;
+        --surface-variant: #1a1a2e;
+        --on-surface: #f1f5f9;
+        --on-surface-variant: #94a3b8;
+        --outline: #2d2d4d;
+        --outline-variant: #1e1e38;
+        --error: #ef4444;
+        --warn: #f59e0b;
+        --success: #34d399;
+
+        --code-bg: #05050a;
+        --code-key: #c4b5fd;
+        --code-str: #86efac;
+        --code-num: #fcd34d;
+        --code-comment: #6b7280;
+        --code-punct: #cbd5e1;
+        --code-base: #e2e8f0;
+
+        --sidebar-w: 280px;
+        --topbar-h: 64px;
+        --content-max: 900px;
+
+        --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+        --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+        --radius: 0.5rem;
+        --radius-lg: 0.75rem;
+        --radius-xl: 1rem;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      ::selection {
+        background: rgba(139, 92, 246, 0.3);
+        color: #fff;
+      }
+
+      body {
+        font-family: var(--font-sans);
+        background-color: var(--bg);
+        color: var(--on-surface);
+        font-size: 14px;
+        line-height: 1.7;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        overflow-x: hidden;
+        min-height: 100vh;
+      }
+
+      /* Ambient vibrant glow behind everything */
+      body::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        background: radial-gradient(circle at 50% -20%, rgba(139, 92, 246, 0.22), transparent 65%),
+          radial-gradient(700px 480px at 100% 0%, rgba(99, 102, 241, 0.1), transparent 60%);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .material-symbols-outlined {
+        font-family: 'Material Symbols Outlined';
+        font-weight: normal;
+        font-style: normal;
+        line-height: 1;
+        display: inline-block;
+        vertical-align: middle;
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        -webkit-font-smoothing: antialiased;
+        user-select: none;
+      }
+
+      .icon-sm {
+        font-size: 18px;
+      }
+      .icon-20 {
+        font-size: 20px;
+      }
+
+      /* ---------- Glass surfaces ---------- */
+      .glass {
+        background: rgba(13, 13, 26, 0.72);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+      }
+
+      /* ---------- Top bar ---------- */
+      .topbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: var(--topbar-h);
+        z-index: 50;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 32px;
+        border-bottom: 1px solid var(--outline-variant);
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .brand .logo {
+        width: 32px;
+        height: 32px;
+        border-radius: var(--radius);
+        background: var(--gradient);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+      }
+      .brand .logo .material-symbols-outlined {
+        font-size: 18px;
+      }
+      .brand .name {
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        color: var(--on-surface);
+      }
+      .brand .sub {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--on-surface-variant);
+        margin-left: 2px;
+      }
+      .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex: 1;
+        justify-content: flex-end;
+        max-width: 520px;
+      }
+      .search {
+        position: relative;
+        flex: 1;
+      }
+      .search .material-symbols-outlined {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--on-surface-variant);
+        font-size: 18px;
+      }
+      .search input {
+        width: 100%;
+        background: rgba(26, 26, 46, 0.4);
+        border: 1px solid var(--outline);
+        border-radius: var(--radius-lg);
+        padding: 9px 16px 9px 42px;
+        color: var(--on-surface);
+        font-family: var(--font-sans);
+        font-size: 14px;
+        transition: all 0.18s ease;
+      }
+      .search input::placeholder {
+        color: rgba(148, 163, 184, 0.5);
+      }
+      .search input:focus {
+        outline: none;
+        border-color: var(--primary);
+        background: rgba(26, 26, 46, 0.65);
+        box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.18);
+      }
+      .topbar-meta {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding-left: 16px;
+        border-left: 1px solid var(--outline);
+      }
+      .topbar-meta .version {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--on-surface-variant);
+        transition: color 0.15s;
+      }
+      .topbar-meta .version:hover {
+        color: var(--primary);
+      }
+      .topbar-meta .material-symbols-outlined {
+        color: var(--on-surface-variant);
+        font-size: 20px;
+        cursor: pointer;
+      }
+
+      /* ---------- Sidebar ---------- */
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: var(--sidebar-w);
+        height: 100vh;
+        z-index: 40;
+        border-right: 1px solid var(--outline-variant);
+        display: flex;
+        flex-direction: column;
+        padding-top: var(--topbar-h);
+      }
+      .sidebar nav {
+        padding: 24px 16px;
+        overflow-y: auto;
+      }
+      .nav-group-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--on-surface-variant);
+        padding: 8px 16px;
+        margin-bottom: 4px;
+      }
+      .nav-group-label.mt {
+        margin-top: 24px;
+      }
+      .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 11px 16px;
+        border-radius: var(--radius);
+        color: var(--on-surface-variant);
+        font-size: 14px;
+        font-weight: 500;
+        border-left: 3px solid transparent;
+        transition: all 0.18s ease;
+      }
+      .nav-link .material-symbols-outlined {
+        font-size: 20px;
+      }
+      .nav-link:hover {
+        color: var(--on-surface);
+        background: rgba(255, 255, 255, 0.05);
+      }
+      .nav-link.active {
+        color: var(--primary);
+        font-weight: 600;
+        background: linear-gradient(90deg, rgba(139, 92, 246, 0.16) 0%, rgba(139, 92, 246, 0) 100%);
+        border-left-color: var(--primary);
+        border-radius: 0 var(--radius) var(--radius) 0;
+      }
+      .nav-link.active .material-symbols-outlined {
+        color: var(--primary);
+      }
+      .sidebar-footer {
+        margin-top: auto;
+        padding: 16px;
+        border-top: 1px solid var(--outline-variant);
+      }
+      .sidebar-footer .nav-link {
+        padding: 8px 16px;
+        border-left: none;
+      }
+
+      /* ---------- Main ---------- */
+      main {
+        padding-left: var(--sidebar-w);
+        padding-top: var(--topbar-h);
+        min-height: 100vh;
+      }
+      .content {
+        max-width: var(--content-max);
+        margin: 0 auto;
+        padding: 48px 32px 64px;
+      }
+
+      /* ---------- Breadcrumbs ---------- */
+      .breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        color: rgba(148, 163, 184, 0.6);
+        margin-bottom: 24px;
+        text-transform: uppercase;
+      }
+      .breadcrumb .material-symbols-outlined {
+        font-size: 14px;
+      }
+      .breadcrumb .current {
+        color: var(--primary);
+        font-weight: 700;
+      }
+
+      /* ---------- Hero ---------- */
+      .hero {
+        position: relative;
+        margin-bottom: 48px;
+      }
+      .hero .accent {
+        position: absolute;
+        left: -32px;
+        top: 4px;
+        bottom: 4px;
+        width: 4px;
+        border-radius: 9999px;
+        background: var(--primary);
+        box-shadow: 0 0 18px rgba(139, 92, 246, 0.6);
+      }
+      .hero h1 {
+        font-size: 48px;
+        line-height: 1.1;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: var(--on-surface);
+        margin-bottom: 16px;
+      }
+      .hero p {
+        font-size: 17px;
+        line-height: 1.65;
+        color: var(--on-surface-variant);
+        max-width: 65ch;
+      }
+      .hero p + p {
+        margin-top: 10px;
+      }
+      .hero p.sub {
+        font-size: 15px;
+      }
+
+      /* ---------- Section ---------- */
+      section {
+        margin-bottom: 48px;
+        scroll-margin-top: 88px;
+      }
+      .section-head {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .badge {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+        border-radius: var(--radius-lg);
+        background: rgba(139, 92, 246, 0.1);
+        border: 1px solid rgba(139, 92, 246, 0.25);
+        color: var(--primary);
+        font-weight: 700;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      }
+      .section-head h2 {
+        font-size: 30px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--on-surface);
+        line-height: 1.2;
+      }
+      section > p {
+        font-size: 16px;
+        line-height: 1.7;
+        color: var(--on-surface-variant);
+        margin-bottom: 20px;
+        max-width: 70ch;
+      }
+      h3 {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--on-surface);
+        margin: 32px 0 14px;
+        letter-spacing: -0.01em;
+      }
+      strong {
+        color: var(--on-surface);
+        font-weight: 600;
+      }
+
+      /* ---------- Inline code ---------- */
+      p code,
+      td code,
+      li code,
+      .callout-body code,
+      h3 code {
+        font-family: var(--font-mono);
+        font-size: 0.85em;
+        background: rgba(139, 92, 246, 0.12);
+        color: #c4b5fd;
+        padding: 0.12em 0.42em;
+        border-radius: 5px;
+        border: 1px solid rgba(139, 92, 246, 0.2);
+        white-space: nowrap;
+      }
+
+      /* ---------- Code block ---------- */
+      .code-block {
+        background: var(--code-bg);
+        border: 1px solid var(--outline);
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        margin: 22px 0;
+        box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.8);
+      }
+      .code-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 11px 18px;
+        background: rgba(255, 255, 255, 0.04);
+        border-bottom: 1px solid var(--outline);
+      }
+      .code-bar-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .dot {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+      }
+      .dot.r {
+        background: rgba(239, 68, 68, 0.4);
+      }
+      .dot.y {
+        background: rgba(245, 158, 11, 0.4);
+      }
+      .dot.g {
+        background: rgba(52, 211, 153, 0.4);
+      }
+      .code-label {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--on-surface-variant);
+        margin-left: 8px;
+      }
+      .copy-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--on-surface-variant);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        transition: color 0.15s;
+      }
+      .copy-btn .material-symbols-outlined {
+        font-size: 16px;
+      }
+      .copy-btn:hover {
+        color: var(--primary);
+      }
+      .code-block pre {
+        margin: 0;
+        padding: 24px 26px;
+        overflow-x: auto;
+      }
+      .code-block code {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        line-height: 1.7;
+        color: var(--code-base);
+        white-space: pre;
+      }
+      .syn-key {
+        color: var(--code-key);
+      }
+      .syn-str {
+        color: var(--code-str);
+      }
+      .syn-num {
+        color: var(--code-num);
+      }
+      .syn-comment {
+        color: var(--code-comment);
+        font-style: italic;
+      }
+      .syn-punct {
+        color: var(--code-punct);
+      }
+
+      /* ---------- Callouts ---------- */
+      .callout {
+        display: flex;
+        gap: 16px;
+        padding: 20px 22px;
+        border-radius: var(--radius-xl);
+        margin: 22px 0;
+        line-height: 1.6;
+      }
+      .callout .material-symbols-outlined {
+        font-size: 24px;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+      .callout-body {
+        min-width: 0;
+      }
+      .callout-body .title {
+        display: block;
+        font-weight: 700;
+        color: var(--on-surface);
+        margin-bottom: 5px;
+      }
+      .callout-body p {
+        color: rgba(148, 163, 184, 0.92);
+        font-size: 14px;
+      }
+      .callout-body p + p {
+        margin-top: 8px;
+      }
+      .callout.info {
+        background: rgba(139, 92, 246, 0.07);
+        border: 1px solid rgba(139, 92, 246, 0.2);
+      }
+      .callout.info .material-symbols-outlined {
+        color: var(--primary);
+      }
+      .callout.warning {
+        background: rgba(245, 158, 11, 0.07);
+        border: 1px solid rgba(245, 158, 11, 0.22);
+      }
+      .callout.warning .material-symbols-outlined {
+        color: var(--warn);
+      }
+      .callout.error {
+        background: rgba(239, 68, 68, 0.06);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+      }
+      .callout.error .material-symbols-outlined {
+        color: var(--error);
+      }
+      .callout a {
+        color: #c4b5fd;
+        font-weight: 500;
+      }
+      .callout a:hover {
+        text-decoration: underline;
+      }
+
+      /* ---------- Tables ---------- */
+      .table-wrap {
+        border: 1px solid var(--outline);
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        margin: 22px 0;
+        background: rgba(13, 13, 26, 0.5);
+      }
+      .table-scroll {
+        overflow-x: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+      }
+      thead {
+        background: var(--surface);
+        border-bottom: 1px solid var(--outline);
+      }
+      th {
+        font-family: var(--font-sans);
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--on-surface-variant);
+        padding: 14px 20px;
+        white-space: nowrap;
+      }
+      td {
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--outline-variant);
+        vertical-align: top;
+        font-size: 14px;
+        color: var(--on-surface-variant);
+        line-height: 1.55;
+      }
+      tbody tr:last-child td {
+        border-bottom: none;
+      }
+      tbody tr {
+        transition: background 0.15s;
+      }
+      tbody tr:hover {
+        background: rgba(255, 255, 255, 0.025);
+      }
+      td:first-child {
+        white-space: nowrap;
+      }
+
+      /* ---------- Pills ---------- */
+      .pill-mono {
+        font-family: var(--font-mono);
+        font-size: 12.5px;
+        background: rgba(139, 92, 246, 0.12);
+        color: #c4b5fd;
+        padding: 3px 9px;
+        border-radius: 6px;
+        border: 1px solid rgba(139, 92, 246, 0.2);
+        white-space: nowrap;
+      }
+      .pill-req {
+        display: inline-block;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 3px 10px;
+        border-radius: 9999px;
+      }
+      .pill-req.yes {
+        background: rgba(52, 211, 153, 0.12);
+        color: var(--success);
+        border: 1px solid rgba(52, 211, 153, 0.25);
+      }
+      .pill-req.no {
+        background: rgba(148, 163, 184, 0.1);
+        color: var(--on-surface-variant);
+        border: 1px solid var(--outline);
+      }
+
+      /* ---------- In-content transport list ---------- */
+      .nav-list {
+        border: 1px solid var(--outline);
+        border-radius: var(--radius-xl);
+        overflow: hidden;
+        margin: 22px 0;
+        background: rgba(13, 13, 26, 0.5);
+      }
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 18px 22px;
+        border-bottom: 1px solid var(--outline-variant);
+        transition: background 0.15s;
+      }
+      .nav-item:last-child {
+        border-bottom: none;
+      }
+      a.nav-item:hover {
+        background: rgba(255, 255, 255, 0.04);
+      }
+      .nav-item .idx {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--primary);
+        width: 24px;
+        flex-shrink: 0;
+      }
+      .nav-item .nav-body {
+        flex: 1;
+        min-width: 0;
+      }
+      .nav-item .nav-title {
+        display: block;
+        font-weight: 600;
+        color: var(--on-surface);
+      }
+      .nav-item .nav-desc {
+        font-size: 13px;
+        color: var(--on-surface-variant);
+      }
+      .nav-item .arrow {
+        font-family: var(--font-mono);
+        color: var(--on-surface-variant);
+        flex-shrink: 0;
+        transition: transform 0.18s ease, color 0.18s ease;
+      }
+      a.nav-item:hover .arrow {
+        color: var(--primary);
+        transform: translateX(3px);
+      }
+      .nav-item.current {
+        background: rgba(139, 92, 246, 0.08);
+      }
+      .nav-item .here {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--primary);
+        flex-shrink: 0;
+      }
+
+      /* ---------- Bento cards ---------- */
+      .bento {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin: 22px 0;
+      }
+      .card {
+        padding: 26px;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
+        background-color: var(--surface);
+        border: 1px solid var(--outline);
+        border-radius: var(--radius-xl);
+        transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+      }
+      .card:hover {
+        transform: translateY(-3px);
+        border-color: rgba(139, 92, 246, 0.5);
+        box-shadow: 0 18px 40px -20px rgba(139, 92, 246, 0.3);
+      }
+      .card .card-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        background: rgba(139, 92, 246, 0.1);
+        border: 1px solid rgba(139, 92, 246, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        margin-bottom: 18px;
+      }
+      .card .card-icon .material-symbols-outlined {
+        font-size: 24px;
+      }
+      .card.alt .card-icon {
+        background: rgba(168, 85, 247, 0.1);
+        border-color: rgba(168, 85, 247, 0.15);
+        color: var(--secondary);
+      }
+      .card h3 {
+        margin: 0 0 12px;
+        font-size: 18px;
+      }
+      .card .card-label {
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--on-surface-variant);
+        margin-bottom: 14px;
+      }
+      .card-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .card-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        font-size: 13.5px;
+        color: var(--on-surface-variant);
+        font-family: var(--font-mono);
+      }
+      .card-list li .material-symbols-outlined {
+        font-size: 18px;
+        color: var(--primary);
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+      .card.alt .card-list li .material-symbols-outlined {
+        color: var(--secondary);
+      }
+
+      /* ---------- Footer ---------- */
+      .doc-footer {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 24px;
+        padding-top: 40px;
+        margin-top: 16px;
+        border-top: 1px solid var(--outline);
+      }
+      .foot-link {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        transition: color 0.15s;
+      }
+      .foot-link.next {
+        text-align: right;
+        flex-direction: row-reverse;
+      }
+      .foot-link .foot-arrow {
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-lg);
+        border: 1px solid var(--outline);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--on-surface-variant);
+        flex-shrink: 0;
+        transition: all 0.18s ease;
+      }
+      .foot-link:hover .foot-arrow {
+        border-color: var(--primary);
+        background: rgba(139, 92, 246, 0.08);
+        color: var(--primary);
+      }
+      .foot-link .foot-kicker {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        color: var(--on-surface-variant);
+      }
+      .foot-link .foot-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--on-surface);
+        transition: color 0.15s;
+      }
+      .foot-link:hover .foot-title {
+        color: var(--primary);
+      }
+      .foot-copy {
+        font-size: 12px;
+        color: rgba(148, 163, 184, 0.55);
+        order: 3;
+        width: 100%;
+        text-align: center;
+      }
+
+      /* ---------- Reveal animation ---------- */
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .content > * {
+        animation: rise 0.55s cubic-bezier(0.22, 0.7, 0.2, 1) both;
+      }
+      .content > *:nth-child(1) {
+        animation-delay: 0.02s;
+      }
+      .content > *:nth-child(2) {
+        animation-delay: 0.08s;
+      }
+      .content > *:nth-child(3) {
+        animation-delay: 0.14s;
+      }
+      .content > *:nth-child(4) {
+        animation-delay: 0.2s;
+      }
+      .content > *:nth-child(5) {
+        animation-delay: 0.26s;
+      }
+      .content > *:nth-child(n + 6) {
+        animation-delay: 0.3s;
+      }
+
+      /* ---------- Responsive ---------- */
+      .menu-btn {
+        display: none;
+        background: none;
+        border: none;
+        color: var(--on-surface);
+        cursor: pointer;
+      }
+      @media (max-width: 1024px) {
+        .sidebar {
+          transform: translateX(-100%);
+          transition: transform 0.25s ease;
+        }
+        .sidebar.open {
+          transform: translateX(0);
+        }
+        main {
+          padding-left: 0;
+        }
+        .menu-btn {
+          display: inline-flex;
+        }
+      }
+      @media (max-width: 768px) {
+        .topbar {
+          padding: 0 16px;
+        }
+        .search {
+          display: none;
+        }
+        .brand .sub {
+          display: none;
+        }
+        .content {
+          padding: 32px 18px 56px;
+        }
+        .hero h1 {
+          font-size: 34px;
+        }
+        .hero .accent {
+          left: -18px;
+        }
+        .section-head h2 {
+          font-size: 24px;
+        }
+        .bento {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        .content > * {
+          animation: none !important;
+          transition: none !important;
+          scroll-behavior: auto !important;
+        }
+      }
+
+      /* ---------- Provided image icons ---------- */
+      .brand .logo {
+        background: rgba(139, 92, 246, 0.14);
+        border: 1px solid rgba(139, 92, 246, 0.3);
+        box-shadow: none;
+        overflow: hidden;
+      }
+      .brand-img {
+        width: 24px;
+        height: 24px;
+        display: block;
+      }
+      /* Black line-icons tinted to the theme via currentColor mask — so they
+         follow the same muted/hover/active colours as the Material Symbols. */
+      .nav-img-icon {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+        background-color: currentColor;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+      }
+      .ic-flutter { -webkit-mask-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA6klEQVR4nO2aQQrCMBBF3yUS9P7X0L1gV3bhcSpCESlaMjUxM+U/yKIQQl4mE2agIERoMjAAk3GccSYxbpCYgAtOSMBt3tQdOFSe/xckgSTqIQkkUQ9JIIl6SAJJ1EMSSKIeu5DIb53dOH//Mr9Lu5sbSHRpd4dGEjXWayLiWuJT0h6xJ7abhyKtyISRWJMJJ/Ht3rrOCQynFi4SS56ndZ1HuEiUECYSu5eoXQF0ZUsF4FIkF5yy5fnuirUCKCl/umGtAFzLZOMVcp38qaACIEpkknFzkvkXkkEy7dnF3w/LfsYqcnqtIIjDAwTEcHtKsHbOAAAAAElFTkSuQmCC); mask-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA6klEQVR4nO2aQQrCMBBF3yUS9P7X0L1gV3bhcSpCESlaMjUxM+U/yKIQQl4mE2agIERoMjAAk3GccSYxbpCYgAtOSMBt3tQdOFSe/xckgSTqIQkkUQ9JIIl6SAJJ1EMSSKIeu5DIb53dOH//Mr9Lu5sbSHRpd4dGEjXWayLiWuJT0h6xJ7abhyKtyISRWJMJJ/Ht3rrOCQynFi4SS56ndZ1HuEiUECYSu5eoXQF0ZUsF4FIkF5yy5fnuirUCKCl/umGtAFzLZOMVcp38qaACIEpkknFzkvkXkkEy7dnF3w/LfsYqcnqtIIjDAwTEcHtKsHbOAAAAAElFTkSuQmCC); }
+      .ic-mobile  { -webkit-mask-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA+UlEQVR4nO2aSwrCQBBE6x7RnXpS410kZGW8lQE/K1ctDTMgIrEbe4aI9WA2WVTxMj27Bv6cBYAOwBWABB3N6gGsa0qMgQKvZwTQ1BDpUuEhuFCzhpS9RwXyOJX4a8uUfUYF8ghMsQNwfzM2+q0NyA/BUnT78Ki/zQ/BUtRO3Mg2ID+E0kVCEScUMSIUcUIRI0IRJxQxIhRxQhEjQhEnFDEiFHFCESNCEScUMSIUcUIRI0IRJxQxIhRxQhEjQhEnFDEiFHFCkbmJXFKRrnL89MJAn8qGYBnNOqZsXRMpzgbA6WkESizVrFCJJi2+5DGLOJqlN1FNYpY8ANzMIivLj9ruAAAAAElFTkSuQmCC);  mask-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAA+UlEQVR4nO2aSwrCQBBE6x7RnXpS410kZGW8lQE/K1ctDTMgIrEbe4aI9WA2WVTxMj27Bv6cBYAOwBWABB3N6gGsa0qMgQKvZwTQ1BDpUuEhuFCzhpS9RwXyOJX4a8uUfUYF8ghMsQNwfzM2+q0NyA/BUnT78Ki/zQ/BUtRO3Mg2ID+E0kVCEScUMSIUcUIRI0IRJxQxIhRxQhEjQhEnFDEiFHFCESNCEScUMSIUcUIRI0IRJxQxIhRxQhEjQhEnFDEiFHFCkbmJXFKRrnL89MJAn8qGYBnNOqZsXRMpzgbA6WkESizVrFCJJi2+5DGLOJqlN1FNYpY8ANzMIivLj9ruAAAAAElFTkSuQmCC); }
+      .ic-web     { -webkit-mask-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAEm0lEQVR4nO2aW4hWVRTHf16qSaYoqCwomMSHiIK0osmnqKgZkiZLraS3HnxRukE3o5gotRsZ0g2CCExFMm2kiwU+9FBIdygzKIqasSKrsUgds/lixX/D4rD3OeebOWe+b6Q/bOY7e629zl5nr73WXmsP/I8jE51AL7Aa2AbsBn4DDqnZ7y+BAWAV0KMxbYEpmvwm4CDQaLIdADZKKZPVEiwEPktM8AfgQeBi1zcXuAf4LjHmU2DBRCowG3jHTeAnYFi/DwOPZEwm8AUcAzwgXuv/BfjR8b0FzKpbiSXAH24Ct+jL2/OIVimLrCIBZk5/iXYnsFwyG8A+4Po6FDD7fchNaiswE7gM+EdtfmJsSpGgzN9q3ZK5xY3pr1qJp53pLFP/8doLDSnJGBQx3CX610CH+pY501tblSJhJfZnNuNq9b8PTB+HIlOB98SzwvVfo3dWsjJLJMhMp8/1nybXabR5BTKKFDHMAUa1/050/X16t41fPB7vFDb27Rnaw+q3wEcFihheEd99mf7b1D88Vm/2xhgCXN1te7NKLGyDSTcSzZt4oZcKEfvWCP1F0e4tKa+saSGZDeC5CG25aJ+UPc70asCQc4cBJmCP6OfUoMi54rVjTBY2l0HRrywjbFPEFQacJZodKahBEcPP4o9t7BWibSgScpzcqrnCrgj9Jgmy6FuXIlvFHzuidGluFl9mlDGrnQn6YwkXWaUi94vfcpYYdop+RZ6QEK1twjG8mvO1qlLkBvGbicfwuOgr84RsE1MqL/hY9AtrVOQi8X+QoF8n+mt5Qr4S03kJekiKzqxRkVni/zZBnyu6pc1J7BXTSQn676KfUKMincCfelcMJ0ue5S5JjExwlE6hG/i1YOzByaBICI4h+MaazbUtTWsH8KFShDzMlDwrLyWxu4WbPfB9UyA/bPYv8oQNiOnaFrhfbzZDwNkJvkXisbkmsaogIG6uMSAGvh36a2Z+QYTvCdHvzhPW08IjSuDrcJZhZaFLMnzPi2aeLdeHt+rQ6PmOAl7W8/5Mqelo4AXx5GJjzlev8xif5ZsKPKM+K4LfSJPocRvu2JzEyvx8nYpk961VU5bSJD4qkerGEq86FAlFvFHRrW5cGgtaENmLFF7qalypXCWK19tMkZCrHBLfs9pHpY7T+zTojgko0JXlm+9KqevKeC8U+MJG88nWqRWXTJvhQ7ElVEEHItWeKPo14ICys6qL2GX4OoG3dQ4LLVhLWcv4D2vdytjlTpXXCmX4ZjuvFWuf0wTCyoTlNPO6dJwXPSm+aTpTrXH07aI/pf3rm0X7prDYLelexZl+l+gsakKRqxJ804D17tk+luFyPe/RPeS4YV/gzZzL0EcLLkM7dO94OKHIev0NpmTvyqYRN1Mh+pzgbBvUvpnn+s7XaeD7gjjS0IfpVRFi1B2HwsXTrrIxpCymqKC8wfn28QbEYXdEX6O+l/Q83WWpV1MTZqiMuVL1212qhIxIyUFdV2zRPw4E2w8Y0v7rdn1duvG1aH5G5hD5Lm0K84KnRPpDXrJZscSb76TCnIw52r55EjidSYh1WgEzSX/re2TiX5d7y5OMCWshAAAAAElFTkSuQmCC);     mask-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ixAAAACXBIWXMAAAsTAAALEwEAmpwYAAAEm0lEQVR4nO2aW4hWVRTHf16qSaYoqCwomMSHiIK0osmnqKgZkiZLraS3HnxRukE3o5gotRsZ0g2CCExFMm2kiwU+9FBIdygzKIqasSKrsUgds/lixX/D4rD3OeebOWe+b6Q/bOY7e629zl5nr73WXmsP/I8jE51AL7Aa2AbsBn4DDqnZ7y+BAWAV0KMxbYEpmvwm4CDQaLIdADZKKZPVEiwEPktM8AfgQeBi1zcXuAf4LjHmU2DBRCowG3jHTeAnYFi/DwOPZEwm8AUcAzwgXuv/BfjR8b0FzKpbiSXAH24Ct+jL2/OIVimLrCIBZk5/iXYnsFwyG8A+4Po6FDD7fchNaiswE7gM+EdtfmJsSpGgzN9q3ZK5xY3pr1qJp53pLFP/8doLDSnJGBQx3CX610CH+pY501tblSJhJfZnNuNq9b8PTB+HIlOB98SzwvVfo3dWsjJLJMhMp8/1nybXabR5BTKKFDHMAUa1/050/X16t41fPB7vFDb27Rnaw+q3wEcFihheEd99mf7b1D88Vm/2xhgCXN1te7NKLGyDSTcSzZt4oZcKEfvWCP1F0e4tKa+saSGZDeC5CG25aJ+UPc70asCQc4cBJmCP6OfUoMi54rVjTBY2l0HRrywjbFPEFQacJZodKahBEcPP4o9t7BWibSgScpzcqrnCrgj9Jgmy6FuXIlvFHzuidGluFl9mlDGrnQn6YwkXWaUi94vfcpYYdop+RZ6QEK1twjG8mvO1qlLkBvGbicfwuOgr84RsE1MqL/hY9AtrVOQi8X+QoF8n+mt5Qr4S03kJekiKzqxRkVni/zZBnyu6pc1J7BXTSQn676KfUKMincCfelcMJ0ue5S5JjExwlE6hG/i1YOzByaBICI4h+MaazbUtTWsH8KFShDzMlDwrLyWxu4WbPfB9UyA/bPYv8oQNiOnaFrhfbzZDwNkJvkXisbkmsaogIG6uMSAGvh36a2Z+QYTvCdHvzhPW08IjSuDrcJZhZaFLMnzPi2aeLdeHt+rQ6PmOAl7W8/5Mqelo4AXx5GJjzlev8xif5ZsKPKM+K4LfSJPocRvu2JzEyvx8nYpk961VU5bSJD4qkerGEq86FAlFvFHRrW5cGgtaENmLFF7qalypXCWK19tMkZCrHBLfs9pHpY7T+zTojgko0JXlm+9KqevKeC8U+MJG88nWqRWXTJvhQ7ElVEEHItWeKPo14ICys6qL2GX4OoG3dQ4LLVhLWcv4D2vdytjlTpXXCmX4ZjuvFWuf0wTCyoTlNPO6dJwXPSm+aTpTrXH07aI/pf3rm0X7prDYLelexZl+l+gsakKRqxJ804D17tk+luFyPe/RPeS4YV/gzZzL0EcLLkM7dO94OKHIev0NpmTvyqYRN1Mh+pzgbBvUvpnn+s7XaeD7gjjS0IfpVRFi1B2HwsXTrrIxpCymqKC8wfn28QbEYXdEX6O+l/Q83WWpV1MTZqiMuVL1212qhIxIyUFdV2zRPw4E2w8Y0v7rdn1duvG1aH5G5hD5Lm0K84KnRPpDXrJZscSb76TCnIw52r55EjidSYh1WgEzSX/re2TiX5d7y5OMCWshAAAAAElFTkSuQmCC); }
+
+      /* ---------- Icon shimmer until the symbol font loads ---------- */
+      @keyframes icon-shimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
+      html:not(.fonts-ready) .material-symbols-outlined {
+        color: transparent !important;
+        display: inline-block;
+        width: 1em;
+        height: 1em;
+        border-radius: 6px;
+        overflow: hidden;
+        text-indent: 200%;
+        white-space: nowrap;
+        vertical-align: middle;
+        background-image: linear-gradient(100deg, rgba(148, 163, 184, 0.1) 30%, rgba(139, 92, 246, 0.22) 50%, rgba(148, 163, 184, 0.1) 70%);
+        background-size: 200% 100%;
+        animation: icon-shimmer 1.1s ease-in-out infinite;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html:not(.fonts-ready) .material-symbols-outlined { animation: none; }
+      }
+    </style>
+    <script>
+      // Reveal Material Symbols only once the icon font is CONFIRMED loaded; until
+      // then CSS shows a shimmer placeholder. We never reveal on a timeout, so the
+      // ligature "keys" (e.g. "chevron_right") can never flash — worst case the
+      // icons keep shimmering until the font truly arrives.
+      (function () {
+        var el = document.documentElement, font = "24px 'Material Symbols Outlined'";
+        if (!(window.FontFaceSet && document.fonts && document.fonts.check)) {
+          el.classList.add('fonts-ready');
+          return;
+        }
+        function tryReady() {
+          var ok = false;
+          try { ok = document.fonts.check(font); } catch (e) { ok = true; }
+          if (ok) el.classList.add('fonts-ready');
+          return ok;
+        }
+        if (tryReady()) return;
+        try {
+          document.fonts.load(font).then(tryReady).catch(function () {});
+          document.fonts.ready.then(tryReady);
+        } catch (e) {}
+        var n = 0, iv = setInterval(function () {
+          if (tryReady() || ++n > 60) clearInterval(iv);
+        }, 200);
+      })();
+    </script>
+  </head>
+  <body>
+    <!-- Top bar -->
+    <header class="topbar glass">
+      <div class="brand">
+        <button class="menu-btn" id="menuBtn" aria-label="Toggle navigation">
+          <span class="material-symbols-outlined">menu</span>
+        </button>
+        <div class="logo"><img class="brand-img" src="data:image/png;base64,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" alt="EKYC" /></div>
+        <span class="name">EKYC</span>
+        <span class="sub">Integration</span>
+      </div>
+      <div class="topbar-right">
+        <div class="search">
+          <span class="material-symbols-outlined">search</span>
+          <input type="text" placeholder="Search documentation…" />
+        </div>
+        <div class="topbar-meta">
+          <a class="version" href="#">v1.0</a>
+          <span class="material-symbols-outlined">dark_mode</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar glass" id="sidebar">
+      <nav>
+        <p class="nav-group-label">Transports</p>
+        <a class="nav-link" href="host-integration.html">
+          <span class="material-symbols-outlined">dns</span><span>Host Integration</span>
+        </a>
+        <a class="nav-link active" href="#">
+          <span class="nav-img-icon ic-flutter" aria-hidden="true"></span><span>Flutter integration</span>
+        </a>
+        <a class="nav-link" href="method-channel.html">
+          <span class="nav-img-icon ic-mobile" aria-hidden="true"></span><span>Mobile native integration</span>
+        </a>
+        <a class="nav-link" href="web-integration.html">
+          <span class="nav-img-icon ic-web" aria-hidden="true"></span><span>Front-end integration</span>
+        </a>
+        <p class="nav-group-label mt">On this page</p>
+        <a class="nav-link" href="#when"><span class="material-symbols-outlined">tune</span><span>When to use it</span></a>
+        <a class="nav-link" href="#setup"><span class="material-symbols-outlined">build</span><span>Setup</span></a>
+        <a class="nav-link" href="#interface"><span class="material-symbols-outlined">api</span><span>Delegate interface</span></a>
+        <a class="nav-link" href="#dismiss"><span class="material-symbols-outlined">do_not_touch</span><span>Self-dismissal</span></a>
+      </nav>
+      <div class="sidebar-footer">
+        <a class="nav-link" href="#"><span class="material-symbols-outlined">settings</span><span>Settings</span></a>
+        <a class="nav-link" href="#"><span class="material-symbols-outlined">help</span><span>Support</span></a>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main>
+      <div class="content">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+          <span>DOCS</span>
+          <span class="material-symbols-outlined">chevron_right</span>
+          <span class="current">FLUTTER INTEGRATION</span>
+        </div>
+
+        <!-- Hero -->
+        <div class="hero">
+          <div class="accent"></div>
+          <h1>Flutter integration</h1>
+          <p>
+            For Flutter host apps that embed DIDC directly. DIDC reports every outcome to your app
+            in-process, by calling a delegate you provide — no platform channel, no serialization, no
+            message bus.
+          </p>
+          <p class="sub">It's the lowest-overhead transport, and the right choice whenever your host is itself Flutter.</p>
+        </div>
+
+        <!-- Section 1 -->
+        <section id="when">
+          <div class="section-head">
+            <div class="badge">1</div>
+            <h2>When to use it</h2>
+          </div>
+          <p>DIDC signals your app through one of three transports. Pick the one that matches the kind of app embedding it:</p>
+          <div class="nav-list">
+            <a class="nav-item" href="host-integration.html">
+              <span class="idx">00</span>
+              <span class="nav-body"><span class="nav-title">Host integration</span><span class="nav-desc">Configure, embed, and choose a transport — start here</span></span>
+              <span class="arrow">→</span>
+            </a>
+            <span class="nav-item current">
+              <span class="idx">01</span>
+              <span class="nav-body"><span class="nav-title">Flutter integration</span><span class="nav-desc">A Flutter app embedding the DIDC widget</span></span>
+              <span class="here">You are here</span>
+            </span>
+            <a class="nav-item" href="method-channel.html">
+              <span class="idx">02</span>
+              <span class="nav-body"><span class="nav-title">Mobile native integration</span><span class="nav-desc">A native iOS / Android app running DIDC as a Flutter module</span></span>
+              <span class="arrow">→</span>
+            </a>
+            <a class="nav-item" href="web-integration.html">
+              <span class="idx">03</span>
+              <span class="nav-body"><span class="nav-title">Front-end integration</span><span class="nav-desc">A web page embedding DIDC in an iframe over postMessage</span></span>
+              <span class="arrow">→</span>
+            </a>
+          </div>
+        </section>
+
+        <!-- Section 2 -->
+        <section id="setup">
+          <div class="section-head">
+            <div class="badge">2</div>
+            <h2>Setup</h2>
+          </div>
+          <p>
+            Implement <code>DIDCProtocolInterface</code> and hand your delegate to DIDC with
+            <code>setCommunication</code>, before you mount the DIDC widget:
+          </p>
+          <div class="code-block">
+            <div class="code-bar">
+              <div class="code-bar-left">
+                <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+                <span class="code-label">Dart · host setup</span>
+              </div>
+              <button class="copy-btn"><span class="material-symbols-outlined">content_copy</span>COPY</button>
+            </div>
+            <pre><code><span class="syn-key">await</span> DIDC<span class="syn-punct">.</span>instance<span class="syn-punct">.</span><span class="syn-key">setLocalization</span><span class="syn-punct">({});</span>
+<span class="syn-key">await</span> DIDC<span class="syn-punct">.</span>instance<span class="syn-punct">.</span><span class="syn-key">setEnvironment</span><span class="syn-punct">(</span>DIDCEnvironment<span class="syn-punct">.</span>dev<span class="syn-punct">);</span>
+<span class="syn-key">await</span> DIDC<span class="syn-punct">.</span>instance<span class="syn-punct">.</span><span class="syn-key">setAccessToken</span><span class="syn-punct">(</span><span class="syn-str">'&lt;JWT&gt;'</span><span class="syn-punct">);</span>
+<span class="syn-key">await</span> DIDC<span class="syn-punct">.</span>instance<span class="syn-punct">.</span><span class="syn-key">setHeaders</span><span class="syn-punct">({</span><span class="syn-str">'version'</span><span class="syn-punct">:</span> <span class="syn-str">'11111'</span><span class="syn-punct">,</span> <span class="syn-str">'language'</span><span class="syn-punct">:</span> <span class="syn-str">'en'</span><span class="syn-punct">,</span> <span class="syn-str">'platform'</span><span class="syn-punct">:</span> <span class="syn-str">'ios'</span><span class="syn-punct">});</span>
+<span class="syn-key">await</span> DIDC<span class="syn-punct">.</span>instance<span class="syn-punct">.</span><span class="syn-key">setMetaData</span><span class="syn-punct">({</span>
+  <span class="syn-str">'serviceName'</span><span class="syn-punct">:</span> <span class="syn-str">'INVESTMENT'</span><span class="syn-punct">,</span>
+  <span class="syn-str">'version'</span><span class="syn-punct">:</span> <span class="syn-str">'V1'</span><span class="syn-punct">,</span>
+  <span class="syn-str">'manualFlowAvailable'</span><span class="syn-punct">:</span> <span class="syn-str">'false'</span><span class="syn-punct">,</span>
+<span class="syn-punct">});</span>
+
+DIDC<span class="syn-punct">.</span>instance<span class="syn-punct">.</span><span class="syn-key">setCommunication</span><span class="syn-punct">(</span>
+  DIDCCommunicationType<span class="syn-punct">.</span>protocol<span class="syn-punct">,</span>
+  <span class="syn-key">YourProtocolDelegate</span><span class="syn-punct">(),</span> <span class="syn-comment">// implements DIDCProtocolInterface</span>
+<span class="syn-punct">);</span>
+
+<span class="syn-comment">// ... then embed DIDCWidget() in your widget tree.</span></code></pre>
+          </div>
+          <div class="callout info">
+            <span class="material-symbols-outlined">info</span>
+            <div class="callout-body">
+              <p>The full configuration surface — every <code>DIDC.instance.set*</code> setter and what it does — is covered in the <a href="host-integration.html">Host integration</a> guide.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 3 -->
+        <section id="interface">
+          <div class="section-head">
+            <div class="badge">3</div>
+            <h2>The delegate interface</h2>
+          </div>
+          <p>DIDC calls one of these methods each time it has something to report:</p>
+          <div class="code-block">
+            <div class="code-bar">
+              <div class="code-bar-left">
+                <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+                <span class="code-label">Dart · DIDCProtocolInterface</span>
+              </div>
+              <button class="copy-btn"><span class="material-symbols-outlined">content_copy</span>COPY</button>
+            </div>
+            <pre><code><span class="syn-key">abstract class</span> DIDCProtocolInterface <span class="syn-punct">{</span>
+  <span class="syn-key">void</span> <span class="syn-key">unAuthorized</span><span class="syn-punct">();</span>
+  <span class="syn-key">void</span> <span class="syn-key">contractStatusUpdated</span><span class="syn-punct">(</span>DIDCContractStatus status<span class="syn-punct">);</span> <span class="syn-comment">// signed | notEligible</span>
+  <span class="syn-key">void</span> <span class="syn-key">continueManual</span><span class="syn-punct">();</span>
+  <span class="syn-key">void</span> <span class="syn-key">exit</span><span class="syn-punct">();</span>
+  <span class="syn-key">void</span> <span class="syn-key">fire</span><span class="syn-punct">(</span>EventInterface event<span class="syn-punct">);</span> <span class="syn-comment">// analytics passthrough</span>
+<span class="syn-punct">}</span></code></pre>
+          </div>
+          <h3>What each callback means</h3>
+          <div class="table-wrap">
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr><th>Callback</th><th>What it means / what to do</th><th>Terminal</th></tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><span class="pill-mono">unAuthorized()</span></td>
+                    <td>The session token is invalid or expired. Re-authenticate the user on your side.</td>
+                    <td><span class="pill-req yes">yes</span></td>
+                  </tr>
+                  <tr>
+                    <td><span class="pill-mono">contractStatusUpdated()</span></td>
+                    <td>The flow reached a contract outcome — <code>signed</code> or <code>notEligible</code>. Act on the result.</td>
+                    <td><span class="pill-req yes">yes</span></td>
+                  </tr>
+                  <tr>
+                    <td><span class="pill-mono">continueManual()</span></td>
+                    <td>The user chose “Continue manually”. Take them into your own manual flow.</td>
+                    <td><span class="pill-req yes">yes</span></td>
+                  </tr>
+                  <tr>
+                    <td><span class="pill-mono">exit()</span></td>
+                    <td>The flow finished or the user left DIDC.</td>
+                    <td><span class="pill-req yes">yes</span></td>
+                  </tr>
+                  <tr>
+                    <td><span class="pill-mono">fire()</span></td>
+                    <td>An analytics event you can forward to your telemetry stack. Optional.</td>
+                    <td><span class="pill-req no">no</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 4 -->
+        <section id="dismiss">
+          <div class="section-head">
+            <div class="badge">4</div>
+            <h2>DIDC dismisses itself — don't dismiss it again</h2>
+          </div>
+          <p>
+            On every <strong>terminal</strong> outcome — <code>unAuthorized</code>,
+            <code>contractStatusUpdated</code>, <code>continueManual</code> and <code>exit</code> — DIDC removes
+            itself and returns control to your screen <strong>before</strong> it calls your delegate.
+          </p>
+          <div class="callout warning">
+            <span class="material-symbols-outlined">warning</span>
+            <div class="callout-body">
+              <span class="title">Treat the terminal callbacks as notifications, not dismissal triggers.</span>
+              <p>By the time your delegate method runs, DIDC is already gone and your screen is back on top. Do not pop or dismiss DIDC yourself inside these callbacks — doing so would tear down one of your own routes.</p>
+            </div>
+          </div>
+          <p><code>fire</code> is the only callback that is <strong>not</strong> terminal — it can arrive at any point during the flow and does not mean DIDC is closing.</p>
+
+          <h3>The system back button</h3>
+          <p>
+            You don't wire anything up for the system back button — DIDC manages its own back navigation. While
+            it still has screens to step back through, back moves within DIDC. Once it has nothing left, back
+            exits DIDC and hands control to your screen, exactly as the terminal callbacks above do.
+          </p>
+        </section>
+
+        <!-- Section 5 -->
+        <section id="reference">
+          <div class="section-head">
+            <div class="badge">5</div>
+            <h2>Quick reference</h2>
+          </div>
+          <div class="bento">
+            <div class="card">
+              <div class="card-icon"><span class="material-symbols-outlined">upload</span></div>
+              <div class="card-label">You provide</div>
+              <ul class="card-list">
+                <li><span class="material-symbols-outlined">check_circle</span>setCommunication(….protocol, delegate)</li>
+                <li><span class="material-symbols-outlined">check_circle</span>… implements DIDCProtocolInterface</li>
+                <li><span class="material-symbols-outlined">check_circle</span>unAuthorized()</li>
+                <li><span class="material-symbols-outlined">check_circle</span>contractStatusUpdated(status)</li>
+                <li><span class="material-symbols-outlined">check_circle</span>continueManual()</li>
+                <li><span class="material-symbols-outlined">check_circle</span>exit()</li>
+                <li><span class="material-symbols-outlined">check_circle</span>fire(event)</li>
+              </ul>
+            </div>
+            <div class="card alt">
+              <div class="card-icon"><span class="material-symbols-outlined">verified</span></div>
+              <div class="card-label">Behaviour to honour</div>
+              <ul class="card-list">
+                <li><span class="material-symbols-outlined">arrow_right</span>Register before mounting DIDCWidget</li>
+                <li><span class="material-symbols-outlined">arrow_right</span>Terminal callbacks = notifications</li>
+                <li><span class="material-symbols-outlined">arrow_right</span>Never pop DIDC yourself</li>
+                <li><span class="material-symbols-outlined">arrow_right</span>fire() is the only non-terminal call</li>
+                <li><span class="material-symbols-outlined">arrow_right</span>Back button is handled by DIDC</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="doc-footer">
+          <a class="foot-link prev" href="host-integration.html">
+            <div class="foot-arrow"><span class="material-symbols-outlined">arrow_back</span></div>
+            <div>
+              <p class="foot-kicker">Previous</p>
+              <p class="foot-title">Host integration</p>
+            </div>
+          </a>
+          <a class="foot-link next" href="method-channel.html">
+            <div class="foot-arrow"><span class="material-symbols-outlined">arrow_forward</span></div>
+            <div>
+              <p class="foot-kicker">Next</p>
+              <p class="foot-title">Mobile native integration</p>
+            </div>
+          </a>
+          <p class="foot-copy">EKYC · Digital Identity &amp; Digital Contract</p>
+        </footer>
+      </div>
+    </main>
+
+    <script>
+      // Mobile sidebar toggle
+      const menuBtn = document.getElementById('menuBtn');
+      const sidebar = document.getElementById('sidebar');
+      menuBtn?.addEventListener('click', () => sidebar.classList.toggle('open'));
+
+      // Copy-to-clipboard for code blocks
+      document.querySelectorAll('.copy-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const code = btn.closest('.code-block')?.querySelector('code');
+          if (!code) return;
+          navigator.clipboard?.writeText(code.innerText).then(() => {
+            const label = btn.childNodes[btn.childNodes.length - 1];
+            label.textContent = 'COPIED';
+            setTimeout(() => (label.textContent = 'COPY'), 1400);
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
